@@ -30,7 +30,7 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   form: FormGroup;
   course: Course;
 
-  @ViewChild("saveButton", { static: true }) saveButton: ElementRef;
+  @ViewChild("saveButton", { static: true, read: ElementRef }) saveButton: ElementRef;
 
   @ViewChild("searchInput", { static: true }) searchInput: ElementRef;
 
@@ -51,25 +51,37 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.form.valueChanges
-      .pipe(filter(() => this.form.valid))
-      .subscribe((changes) => {
-        const saveCourse$ = fromPromise(
-          fetch(`/api/courses/${this.course.id}`, {
-            method: "PUT",
-            body: JSON.stringify(changes),
-            headers: {
-              "content-type": "application/json",
-            },
-          })
-        );
-      });
+      .pipe(
+        filter(() => this.form.valid),
+        concatMap(changes => this.saveCourse(changes))
+        // OR mergeMap(changes => this.saveCourse(changes))
+      )
+      .subscribe();
   }
 
-  ngAfterViewInit() {}
+  saveCourse(changes) {
+    return fromPromise(
+      fetch(`/api/courses/${this.course.id}`, {
+        method: "PUT",
+        body: JSON.stringify(changes),
+        headers: {
+          "content-type": "application/json",
+        },
+      })
+    );
+  }
+
+  ngAfterViewInit() {
+    fromEvent(this.saveButton.nativeElement, "click")
+      .pipe(
+        exhaustMap(() => this.saveCourse(this.form.value))
+      ).subscribe(console.log);
+  }
 
   close() {
     this.dialogRef.close();
   }
 
-  save() {}
+  save(){
+  }
 }

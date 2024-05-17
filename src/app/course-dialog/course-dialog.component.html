@@ -61,7 +61,11 @@
         Close
     </button>
 
-    <button mat-raised-button color="primary" #saveButton (click)="save()">
+    <button mat-raised-button
+            color="primary"
+            #saveButton
+            [disabled]="!form.valid"
+            (click)="save()">
         Save
     </button>
 
