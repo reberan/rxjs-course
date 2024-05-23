@@ -15,7 +15,8 @@
     </mat-form-field>
 
 
-    <table class="lessons-table mat-elevation-z7" *ngIf="(lessons$ | async) as lessons">
+    <table class="lessons-table mat-elevation-z7"
+           *ngIf="(lessons$ | async).length > 0 && (lessons$ | async) as lessons; else noLessonsFound">
 
         <thead>
             <th>#</th>
@@ -28,8 +29,15 @@
             <td class="description-cell">{{lesson.description}}</td>
             <td class="duration-cell">{{lesson.duration}}</td>
         </tr>
-
     </table>
+
+  <ng-template #noLessonsFound>
+
+    <div class="lessons-table" *ngIf="searchInput.value">
+      No lesson found matching <span class="search-input-value">{{ searchInput.value }}</span>.
+    </div>
+
+  </ng-template>
 
 
 </div>
