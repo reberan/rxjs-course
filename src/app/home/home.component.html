@@ -1,14 +1,20 @@
 <div class="courses-panel">
-  <h3>All Courses</h3>
+  <h3>{{ title$ | async }}</h3>
 
   <mat-tab-group>
-    <mat-tab label="Beginners">
+    <mat-tab [label]="beginnerCoursesTabLabel$ | async" *ngIf="beginnerCoursesAmount$ | async">
       <courses-card-list
         [courses]="beginnerCourses$ | async"
       ></courses-card-list>
     </mat-tab>
 
-    <mat-tab label="Advanced">
+    <mat-tab [label]="intermediateCoursesTabLabel$ | async" *ngIf="intermediateCoursesAmount$ | async">
+      <courses-card-list
+        [courses]="intermediateCourses$ | async"
+      ></courses-card-list>
+    </mat-tab>
+
+    <mat-tab [label]="advancedCoursesTabLabel$ | async" *ngIf="advancedCoursesAmount$ | async">
       <courses-card-list
         [courses]="advancedCourses$ | async"
       ></courses-card-list>
