@@ -5,7 +5,13 @@ export const createHttpObservable: Function = (url: URL): Observable<any> => {
     const controller = new AbortController();
     const signal = controller.signal;
     fetch(url, {signal})
-      .then((response) => response.json())
+      .then((response) => {
+        if(response.ok){
+          return response.json();
+        }else{
+          subscriber.error('Request failed with status code: ' + response.status);
+        }
+      })
       .then((json) => {
         subscriber.next(json);
         subscriber.complete();

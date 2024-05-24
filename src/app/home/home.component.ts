@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Course, CourseCategory as Category } from "../model/course";
-import { interval, Observable, of, timer, pipe } from "rxjs";
+import { interval, Observable, of, timer, pipe, throwError } from "rxjs";
 import {
   catchError,
   delayWhen,
@@ -8,7 +8,7 @@ import {
   retryWhen,
   shareReplay,
   tap,
-  filter, withLatestFrom
+  filter, withLatestFrom, finalize
 } from "rxjs/operators";
 import { createHttpObservable } from "../common/util";
 import * as e from "express";
@@ -37,10 +37,26 @@ export class HomeComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    const http$: Observable<Course[]> = createHttpObservable("/api/courses");
+    const http$ = createHttpObservable("/api/courses");
 
     this.courses$ = http$.pipe(
-      map((response) => Object.values(response["payload"]))
+      // 27. The Catch and Rethrow RxJs Error Handling Strategy and the finalize Operator
+      // catchError(error => {
+      //   console.log("Error occurred: " + error);
+      //   return throwError(error);
+      // }),
+      // finalize(() => {
+      //   console.log("Finalize executed");
+      // }),
+      tap(() => {
+        console.log("HTTP Request executed");
+      }),
+      map((response) => Object.values(response["payload"])),
+      shareReplay(),
+      // 28. The Retry RxJs Error Handling Strategy
+      retryWhen(errors => errors.pipe(
+        delayWhen(() => timer(2000))
+      ))
     );
 
     this.advancedCourses$ = this.courses$.pipe(

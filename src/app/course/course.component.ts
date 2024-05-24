@@ -1,6 +1,6 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
-import {Course} from "../model/course";
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from "@angular/router";
+import { Course } from "../model/course";
 import {
   debounceTime,
   distinctUntilChanged,
@@ -11,11 +11,11 @@ import {
   concatMap,
   switchMap,
   withLatestFrom,
-  concatAll, shareReplay, filter
+  concatAll, shareReplay, filter, throttle, throttleTime
 } from 'rxjs/operators';
-import {merge, fromEvent, Observable, concat} from 'rxjs';
-import {Lesson} from '../model/lesson';
-import {createHttpObservable} from "../common/util";
+import { merge, fromEvent, Observable, concat, interval } from 'rxjs';
+import { Lesson } from '../model/lesson';
+import { createHttpObservable } from "../common/util";
 
 
 @Component({
@@ -43,6 +43,13 @@ export class CourseComponent implements OnInit, AfterViewInit {
       const searchLessons$ = fromEvent<any>(this.input.nativeElement, "keyup")
         .pipe(
           map(event => event.target.value),
+          // 30. RxJs Throttling vs Debouncing
+          // throttle(() => interval(500)),
+          // or
+          // throttleTime(500),
+
+          // 29. The startWith RxJs Operator - Simplifying the Course Component
+          startWith(''),
           debounceTime(400),
           distinctUntilChanged(),
           switchMap(search => this.loadLessons(search))

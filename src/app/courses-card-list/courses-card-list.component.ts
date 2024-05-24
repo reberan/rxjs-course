@@ -1,7 +1,7 @@
-import {Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
-import {Course} from "../model/course";
+import { Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { Course} from "../model/course";
 import { MatDialog, MatDialogConfig } from "@angular/material/dialog";
-import {CourseDialogComponent} from "../course-dialog/course-dialog.component";
+import { CourseDialogComponent } from "../course-dialog/course-dialog.component";
 
 @Component({
     selector: 'courses-card-list',
