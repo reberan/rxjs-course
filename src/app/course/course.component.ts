@@ -1,21 +1,11 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from "@angular/router";
-import { Course } from "../model/course";
-import {
-  debounceTime,
-  distinctUntilChanged,
-  startWith,
-  tap,
-  delay,
-  map,
-  concatMap,
-  switchMap,
-  withLatestFrom,
-  concatAll, shareReplay, filter, throttle, throttleTime
-} from 'rxjs/operators';
-import { merge, fromEvent, Observable, concat, interval } from 'rxjs';
-import { Lesson } from '../model/lesson';
-import { createHttpObservable } from "../common/util";
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute} from "@angular/router";
+import {Course} from "../model/course";
+import {debounceTime, distinctUntilChanged, map, startWith, switchMap, tap} from 'rxjs/operators';
+import {concat, forkJoin, fromEvent, Observable} from 'rxjs';
+import {Lesson} from '../model/lesson';
+import {createHttpObservable} from "../common/util";
+import {debug, RxJsLoggingLevel, setRxJsLoggingLevel} from "../common/debug";
 
 
 @Component({
@@ -35,8 +25,24 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
     ngOnInit() {
         this.courseId = this.route.snapshot.params['id'];
-        this.course$ = createHttpObservable(`/api/courses/${this.courseId}`);
+        this.course$ = createHttpObservable(`/api/courses/${this.courseId}`)
+          .pipe(
+            // 31 & 32. Implementing a Custom RxJs Operator - the debug Operator
+            debug(RxJsLoggingLevel.INFO, "course value")
+          );
         this.lessons$ = this.loadLessons();
+        // 31 & 32. Implementing a Custom RxJs Operator - the debug Operator
+        setRxJsLoggingLevel(RxJsLoggingLevel.DEBUG);
+
+        // 33. The RxJs forkJoin Operator - In-Depth Explanation and Practical Example
+        forkJoin(this.course$, this.lessons$)
+          .pipe(
+            tap(([courses, lessons]) => {
+              console.log('forkJoin:');
+              console.log('courses -> ', courses);
+              console.log('lessons -> ', lessons);
+            })
+          ).subscribe();
     }
 
     ngAfterViewInit() {
@@ -50,9 +56,13 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
           // 29. The startWith RxJs Operator - Simplifying the Course Component
           startWith(''),
+          // 31 & 32. Implementing a Custom RxJs Operator - the debug Operator
+          debug(RxJsLoggingLevel.TRACE, "search "),
           debounceTime(400),
           distinctUntilChanged(),
-          switchMap(search => this.loadLessons(search))
+          switchMap(search => this.loadLessons(search)),
+          // 31 & 32. Implementing a Custom RxJs Operator - the debug Operator
+          debug(RxJsLoggingLevel.DEBUG, "lessons value ")
         );
       const initialLessons$ = this.loadLessons();
       this.lessons$ = concat(initialLessons$, searchLessons$);
